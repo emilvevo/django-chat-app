@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome!</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"
+      integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="container">
+      <br />
+      <h5 class="text-center">Global Chat</h5>
+      <br />
+      <br />
+      <form method="post" id="message_form" action="send/">
+        {% csrf_token %}
+        <div class="input-group">
+          <input
+            type="text"
+            name="text"
+            id="text"
+            class="form-control"
+            placeholder="Message"
+            required
+          />
+          <div class="input-group-append">
+            <input type="submit" value="Send" class="btn btn-primary" />
+          </div>
+        </div>
+      </form>
+      <br />
+      <br />
+      <hr />
+      <br />
+      <br />
+      <ul id="display" style="width: 100%"></ul>
+    </div>
+
+    <script>
+      $(document).on("submit", "#message_form", function (e) {
+        e.preventDefault();
+        $.ajax({
+          url: "send/",
+          type: "POST",
+          data: {
+            text: $("#text").val(),
+            csrfmiddlewaretoken: $("input[name = csrfmiddlewaretoken]").val(),
+          },
+          success: function () {
+            $("#text").val("");
+          },
+        });
+      });
+    </script>
+    <script>
+      $(document).ready(function () {
+        setInterval(function () {
+          $.ajax({
+            type: "GET",
+            url: "/response",
+            success: function (response) {
+              $("#display").empty();
+              for (var key in response.messages) {
+                var temp =
+                  "<div class='border border-dark p-3 m-3 rounded'>" +
+                  "<p>" +
+                  response.messages[key].text +
+                  " | " +
+                  response.messages[key].name +
+                  "</p>" +
+                  "<small>" +
+                  response.messages[key].sent_at +
+                  "</small>" +
+                  "</div>";
+                $("#display").append(temp);
+              }
+            },
+            error: function (response) {
+              alert("An Error Occured.");
+            },
+          });
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
